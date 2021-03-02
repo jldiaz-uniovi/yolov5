@@ -2,6 +2,7 @@ import sys
 import time
 from pathlib import Path
 import random
+from collections import Counter
 import torch
 import cv2
 
@@ -25,13 +26,14 @@ def load_model(model_name):
     return torch.hub.load('ultralytics/yolov5', model_name, pretrained=True)
 
 
-def detect(imagename, model):
+def detect(imagename, model, augment=False):
     """Applies the model on the image and returns the object with the results"""
     
     t1 = time.time()
-    r= model(imagename)
+    r= model(imagename, augment=augment)
     t2 = time.time()
     r.time = t2-t1
+    r.augment = augment
     return r
 
 
@@ -95,10 +97,14 @@ def get_meta(results):
     """
 
     meta = {
-        "file": results.files[0],
-        "time": results.time,
+        "meta": {
+            "file": results.files[0],
+            "time": results.time,
+            "augment": results.augment,
+        },
         "results": [],
     }
+    res = []
     for *xyxy, conf, clase in results.xyxy[0]:
         label = results.names[int(clase)]
         dic = {
@@ -107,6 +113,8 @@ def get_meta(results):
             "label": label
         }
         meta["results"].append(dic)
+        res.append(label)
+    meta["_summary"] = dict(Counter(res))
     return meta
 
 
