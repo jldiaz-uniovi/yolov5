@@ -14,6 +14,7 @@ from mini_detect import label_image, load_model, detect, get_meta
 UPLOAD_FOLDER = './server/uploads'
 DETECTIONS_FOLDER = './server/detections'
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+PRELOADED_MODELS = ["s", "x"]
 
 # This should be an external file
 FORM_TEMPLATE = '''
@@ -47,8 +48,6 @@ ul.flashes {
   <label for="model">Elige modelo:</label>
   <select name="model" id="model">
     <option value="x">Yolov5x</option>
-    <option value="l">Yolov5l</option>
-    <option value="m">Yolov5m</option>
     <option value="s">Yolov5s</option>
   </select>
 
@@ -73,7 +72,7 @@ app.config['SECRET_KEY'] = "replace-me"
 
 model = {}
 # Prepare Yolo models
-for m in "smlx":
+for m in PRELOADED_MODELS:
     print(f"Loading model yolov5{m}")
     model[m] = load_model(f"yolov5{m}")
 
