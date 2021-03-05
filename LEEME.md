@@ -6,7 +6,7 @@ es necesario seguir los siguientes pasos para la versión "server":
 1. Instalar flask (`pip install flask`) en el mismo entorno de desarrollo
 2. Crear carpetas `server/uploads` y `server/detections` donde van quedando las imágenes que se suben vía Web y los resultados de las detecciones
 3. Lanzar el servidor de desarrollo con `FLASK_APP=server.py flask run`
-4. O el servidor de producción con ./start-gunicorn.sh (este lanza 2*cores+1 procesos)
+4. O el servidor de producción con ./start-gunicorn.sh (este lanza 2*cores procesos)
 
 Conectando un navegador al servidor `:5000/detect` sale un formulario para subir un fichero. Tras unos instantes aparecerá el resultado del etiquetado.
 
