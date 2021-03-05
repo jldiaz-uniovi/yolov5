@@ -52,7 +52,7 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
         cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
         cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
-def label_image(p, results, save_dir):
+def label_image(p, results, save_dir=None):
     """Takes the results of the detection and draws several bounding boxes 
     with labels on the image.
 
@@ -64,12 +64,12 @@ def label_image(p, results, save_dir):
         name of the folder to save the labelled image
     """
 
-    p = Path(p)
-    save_dir = Path(save_dir)
-    save_path = str(save_dir / p.name) 
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in results.names]
 
-    im0 = cv2.imread(str(p))
+    if save_dir:
+        im0 = cv2.imread(str(p))
+    else:
+        im0 = p
     # im0 = results.imgs[0]
     for *xyxy, conf, clase in reversed(results.xyxy[0]):
         label = f"{results.names[int(clase)]} {conf:.2f}"
@@ -82,7 +82,15 @@ def label_image(p, results, save_dir):
         )
 
     # Save results (image with detections)
-    cv2.imwrite(save_path, im0)
+    if save_dir:
+        p = Path(p)
+        save_dir = Path(save_dir)
+        save_path = str(save_dir / p.name) 
+        cv2.imwrite(save_path, im0)
+    else:
+        ok, buffer = cv2.imencode(".jpg", im0)
+        if ok:
+            return buffer
 
 
 def get_meta(results):
@@ -101,6 +109,7 @@ def get_meta(results):
             "file": results.files[0],
             "time": results.time,
             "augment": results.augment,
+            "imagesize": "{}x{}".format(*results.imgs[0].shape[:-1][::-1]),
         },
         "results": [],
     }
