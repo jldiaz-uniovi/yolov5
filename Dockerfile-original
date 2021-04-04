@@ -1,20 +1,20 @@
 # Start FROM Nvidia PyTorch image https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
-FROM python:3.8
+FROM nvcr.io/nvidia/pytorch:20.12-py3
 
 # Install linux packages
-RUN apt update && apt install -y libgl1-mesa-glx
+RUN apt update && apt install -y screen libgl1-mesa-glx
 
 # Install python dependencies
 RUN python -m pip install --upgrade pip
 COPY requirements.txt .
-RUN pip install -r requirements.txt flask
+RUN pip install -r requirements.txt gsutil
 
 # Create working directory
-RUN mkdir -p /app
-WORKDIR /app
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
 # Copy contents
-COPY . /app
+COPY . /usr/src/app
 
 # Copy weights
 #RUN python3 -c "from models import *; \
@@ -22,13 +22,7 @@ COPY . /app
 #attempt_download('weights/yolov5m.pt'); \
 #attempt_download('weights/yolov5l.pt')"
 
-RUN pip install gunicorn
 
-RUN python3 -c "import torch; \
-torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True); \
-torch.hub.load('ultralytics/yolov5', 'yolov5x', pretrained=True)"
-
-CMD ["gunicorn", "--timeout", "0", "--workers", "1", "-b", "0.0.0.0:5000", "server:app" ]
 # ---------------------------------------------------  Extras Below  ---------------------------------------------------
 
 # Build and Push
