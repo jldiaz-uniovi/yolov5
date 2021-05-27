@@ -9,6 +9,8 @@ import cv2
 import numpy as np
 from werkzeug.utils import secure_filename
 from mini_detect import label_image, load_model, detect, get_meta
+from prometheus_flask_exporter import PrometheusMetrics
+
 
 # Some constants
 UPLOAD_FOLDER = './server/uploads'
@@ -66,6 +68,9 @@ ul.flashes {
 
 # Create app
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
+metrics.info("yolo_info", "YoloV5 application info", version="1.3")
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['DETECTIONS_FOLDER'] = DETECTIONS_FOLDER
 app.config['SECRET_KEY'] = "replace-me"
@@ -170,6 +175,12 @@ def upload_file():
         return jsonify(metadata)
 
 @app.route('/detect', methods=['GET', 'POST'])
+@metrics.do_not_track()
+@metrics.summary('requests_by_status', 'Request latencies by status',
+                 labels={'status': lambda r: r.status_code})
+@metrics.gauge('in_progress', 'Long running requests in progress')
+#@metrics.histogram('requests_by_status_and_type', 'Request latencies by status and type',
+#                   labels={'status': lambda r: r.status_code, 'type': lambda: request.form["tipo"]})
 def direct_detect():
     """When GET is used it shows the form which allows
     to upload a file. When POST is used, it receives the file, calls
@@ -204,6 +215,9 @@ def direct_detect():
 
 # Route to "return" the annotated image
 @app.route('/detections/<filename>')
+@metrics.do_not_track()
+@metrics.summary('downloads_by_status', 'Download latencies by status',
+                 labels={'status': lambda r: r.status_code})
 def uploaded_file(filename):
     return send_from_directory(app.config['DETECTIONS_FOLDER'],
                                filename)
