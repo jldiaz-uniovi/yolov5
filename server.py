@@ -178,6 +178,8 @@ def upload_file():
 @metrics.do_not_track()
 @metrics.summary('requests_by_status', 'Request latencies by status',
                  labels={'status': lambda r: r.status_code})
+@metrics.summary('requests_by_type', 'Request latencias by type',
+		labels={'type': lambda: request.method=="GET" or request.form["tipo"] })
 @metrics.gauge('in_progress', 'Long running requests in progress')
 #@metrics.histogram('requests_by_status_and_type', 'Request latencies by status and type',
 #                   labels={'status': lambda r: r.status_code, 'type': lambda: request.form["tipo"]})
